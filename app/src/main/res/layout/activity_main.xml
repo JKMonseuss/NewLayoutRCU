@@ -79,12 +79,12 @@
                 android:layout_weight="1"></com.example.udprcu.RcuButton>
             <com.example.udprcu.RcuButton
                 android:layout_gravity="center"
-                android:id="@+id/btn_option"
+                android:id="@+id/btn_setting"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="20dp"
-                android:background="@drawable/option"
+                android:background="@drawable/setting"
                 android:layout_weight="1"></com.example.udprcu.RcuButton>
         </LinearLayout>
         <LinearLayout

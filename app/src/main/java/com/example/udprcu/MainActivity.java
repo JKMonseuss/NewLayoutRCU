@@ -2,11 +2,15 @@ package com.example.udprcu;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.location.Address;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.Pair;
@@ -16,22 +20,25 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 static DatagramSocket udpSocket;
 private String IP ="";
 private int PORT = 33180;
 private static InetAddress serverAddr;
-RcuButton setting;
+RcuButton btnSetting;
 Context context;
 RcuButton btns[];
 Pair<Integer, Integer> ViewIDs[] = new Pair[] {
@@ -76,15 +83,15 @@ Pair<Integer, Integer> ViewIDs[] = new Pair[] {
         new Pair(R.id.btn_pageUp, KeyEnum.REM_KEY_PGUP.getValue()),
         new Pair(R.id.btn_pageDown, KeyEnum.REM_KEY_PGDN.getValue()),
         new Pair(R.id.btn_stop, KeyEnum.REM_KEY_STOP.getValue()),
-        new Pair(R.id.btn_option, KeyEnum.REM_KEY_OPTION.getValue())
-};
+        };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        displayAlertDialog();
+        displayAlertDialog(true, "");
     }
 
     private void initView() {
@@ -94,11 +101,21 @@ Pair<Integer, Integer> ViewIDs[] = new Pair[] {
             btns[i] = findViewById(ViewIDs[i].first);
             btns[i].setOnTouchListener(ViewIDs[i].second);
         }
+        btnSetting = findViewById(R.id.btn_setting);
+        btnSetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displayAlertDialog(false,"");
+            }
+        });
     }
-    public void displayAlertDialog() {
+
+    public void displayAlertDialog(boolean isFirstConnect,String errorText) {
         LayoutInflater inflater = getLayoutInflater();
         View alertLayout = inflater.inflate(R.layout.custom_dialog_input_ip, null);
         final EditText inputIP = (EditText) alertLayout.findViewById(R.id.et_Username);
+        final TextView txtError = alertLayout.findViewById(R.id.txtError);
+        txtError.setText(errorText);
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Input Ip Address!");
         alert.setView(alertLayout);
@@ -106,43 +123,53 @@ Pair<Integer, Integer> ViewIDs[] = new Pair[] {
         alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-            IP = inputIP.getText().toString();
-            Log.d("ip",IP);
-            connectServer();
-                Log.d("ip",IP);
+                IP = inputIP.getText().toString();
+                    if(validateIPAddress(IP) == true) {
+                        Log.d("ip", IP);
+                        if (isFirstConnect == true) {
+                            connectServer(IP, true);
+                        } else {
+                            connectServer(IP, false);
+                        }
+                    }else{
+                        String error = "Please enter the correct format: xxx.xxx.xxx.xxx";
+                        displayAlertDialog(true, error);
+                    }
             }
         });
         AlertDialog dialog = alert.create();
         dialog.show();
     }
 
-
-    private void connectServer(){
+    public void connectServer(String ip, boolean isFirstConnect){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        if(isFirstConnect == false){
+                            udpSocket.close();
+                        }
                         udpSocket = new DatagramSocket(PORT);
-                        serverAddr = InetAddress.getByName(IP);
-                        Log.d("Status", "connected");
+                        serverAddr = InetAddress.getByName(ip);
+                        Log.d("Status", "connected: "+ip);
+
                     } catch (UnknownHostException e) {
-                        Log.e("Udp:", "Socket Error:", e);
+                        Log.e("Udp", "Socket Error:", e);
                     } catch (IOException e) {
-                        Log.e("Udp Send:", "IO Error:", e);
+                        Log.e("Udp Send", "IO Error:", e);
                     }
                 }
             }).start();
-            Toast.makeText(MainActivity.this, "IP inputed!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Inputed IP!",Toast.LENGTH_SHORT).show();
     }
 
-    public  void sendText(byte[] byteArr) {
-
+    public void sendText(byte[] byteArr) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     Log.d("array", Arrays.toString(byteArr));
-                    Log.d("IP", IP);
                     DatagramPacket packet = new DatagramPacket(byteArr, byteArr.length, serverAddr, PORT);
+                    Log.d("IP", serverAddr.toString());
                     try {
                         udpSocket.send(packet);
                         Log.d("status", "sent");
@@ -151,6 +178,11 @@ Pair<Integer, Integer> ViewIDs[] = new Pair[] {
                     }
                 }
             }).start();
-        }
+    }
+    private static final Pattern PATTERN = Pattern.compile(
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
+    public static boolean validateIPAddress(final String ip) {
+        return PATTERN.matcher(ip).matches();
+    }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -13,16 +14,33 @@
 
         <TextView
             android:layout_width="0dip"
+            android:textStyle="bold"
             android:layout_height="wrap_content"
             android:layout_weight=".3"
             android:text="IP ADDRESS:" />
 
         <EditText
+            android:inputType="number|textUri"
             android:id="@+id/et_Username"
+            android:textStyle="bold"
+            android:textColor="@color/white"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight=".7"
             android:imeOptions="actionDone"
-            android:singleLine="true" />
+            android:singleLine="true"
+            tools:ignore="MissingClass" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_marginLeft="10dp"
+            android:id="@+id/txtError"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="#FF0000"
+            android:textStyle="bold"></TextView>
     </LinearLayout>
 </LinearLayout>

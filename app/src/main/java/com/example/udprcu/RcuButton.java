@@ -65,10 +65,7 @@ public class RcuButton extends ImageButton implements View.OnClickListener, View
             case MotionEvent.ACTION_DOWN:
                 Data keyData = null;
                 if(m_rcuKey != REM_KEY_DIRECT.getValue()) {
-                    keyData = new Data("ITK-NGXXXX000001",0,m_rcuKey,1,1,0,0,0,"DasErste");
-//                    if(m_rcuKey == REM_KEY_SETTING.getValue()){
-//                        mainActivity.displayAlertDialog();
-//                    }
+                    keyData = new Data("ITK-NGXXXX000001", 0, m_rcuKey, 1, 1, 0, 0, 0, "DasErste");
                 }else{
                     Bitmap bitmap;
                     bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ok5);
@@ -101,7 +98,6 @@ public class RcuButton extends ImageButton implements View.OnClickListener, View
 
                 byte [] dataArray = data.validateData(keyData);
                 mainActivity.sendText(dataArray);
-
                 setColorFilter(view);
                 break;
             case MotionEvent.ACTION_CANCEL:
